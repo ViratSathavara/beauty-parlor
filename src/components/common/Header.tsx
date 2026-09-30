@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Sparkles, Phone, Calendar } from "lucide-react";
+import { Menu, X, Sparkles, Phone, Calendar, ChevronRight } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/seo";
 
 const NAV_LINKS = [
@@ -20,75 +20,93 @@ const NAV_LINKS = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   return (
-    <header className="sticky top-0 z-40 bg-canvas/95 backdrop-blur-md border-b border-border/70 transition-all duration-300">
+    <header
+      className={`sticky top-0 z-50 bg-canvas/95 backdrop-blur-md border-b border-border/70 transition-all duration-300 ${
+        scrolled ? "shadow-sm py-1" : "py-0"
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Brand Logo */}
-          <Link href="/" className="flex flex-col group">
-            <span className="font-serif text-2xl sm:text-3xl tracking-[0.2em] uppercase text-charcoal font-medium group-hover:text-gold-dark transition-colors">
+          <Link href="/" className="flex flex-col group shrink-0">
+            <span className="font-serif text-2xl sm:text-3xl tracking-[0.18em] uppercase text-charcoal font-medium group-hover:text-gold-dark transition-colors">
               Elegance
             </span>
-            <span className="text-[9px] uppercase tracking-[0.35em] text-charcoal-muted -mt-1 font-sans">
+            <span className="text-[8px] sm:text-[9px] uppercase tracking-[0.35em] text-charcoal-muted -mt-1 font-sans">
               Beauty Sanctuary
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-7 text-xs uppercase tracking-widest font-medium">
+          {/* Desktop Navigation (Optimized breakpoint & spacing) */}
+          <nav className="hidden lg:flex items-center space-x-3.5 xl:space-x-6 text-[11px] xl:text-xs uppercase tracking-widest font-medium">
             {NAV_LINKS.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`transition-colors relative py-1 ${
+                  className={`transition-colors relative py-1.5 whitespace-nowrap ${
                     isActive
-                      ? "text-gold font-semibold"
-                      : "text-charcoal hover:text-gold"
+                      ? "text-gold-dark font-semibold"
+                      : "text-charcoal hover:text-gold-dark"
                   }`}
                 >
                   {link.label}
                   {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold" />
+                    <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold rounded-full" />
                   )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Right Action Buttons */}
-          <div className="hidden sm:flex items-center space-x-4">
+          {/* Right Desktop CTA Buttons */}
+          <div className="hidden sm:flex items-center space-x-3 shrink-0">
             <a
               href={`tel:${SITE_CONFIG.phone.replace(/\s+/g, "")}`}
-              className="text-xs uppercase tracking-wider text-charcoal hover:text-gold flex items-center space-x-1.5 px-3 py-2 transition-colors"
+              className="text-xs uppercase tracking-wider text-charcoal hover:text-gold-dark flex items-center space-x-1.5 px-3 py-2 transition-colors font-medium"
             >
-              <Phone className="w-3.5 h-3.5 text-gold" />
-              <span>Call Us</span>
+              <Phone className="w-3.5 h-3.5 text-gold-dark" />
+              <span className="hidden xl:inline">Call Us</span>
             </a>
             <Link
               href="/book"
-              className="inline-flex items-center space-x-2 bg-charcoal text-canvas hover:bg-gold-hover hover:text-white px-5 py-2.5 text-xs uppercase tracking-widest font-semibold transition-all duration-300 shadow-sm border border-charcoal hover:border-gold-hover"
+              className="inline-flex items-center space-x-2 bg-charcoal text-canvas hover:bg-gold-dark hover:text-white px-4 xl:px-5 py-2.5 text-[11px] xl:text-xs uppercase tracking-widest font-semibold transition-all duration-300 shadow-sm border border-charcoal hover:border-gold-dark"
             >
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5 text-gold" />
               <span>Book Appointment</span>
             </Link>
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center space-x-3">
+          {/* Mobile Actions */}
+          <div className="lg:hidden flex items-center space-x-2.5">
             <Link
               href="/book"
-              className="bg-charcoal text-canvas px-3 py-1.5 text-[11px] uppercase tracking-wider font-semibold"
+              className="bg-charcoal text-canvas px-3 py-1.5 text-[11px] uppercase tracking-wider font-semibold rounded-sm shadow-xs"
             >
               Book
             </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               type="button"
-              className="p-2 text-charcoal hover:text-gold focus:outline-none"
+              className="p-2 text-charcoal hover:text-gold-dark focus:outline-none"
               aria-label="Toggle navigation menu"
               aria-expanded={mobileMenuOpen}
             >
@@ -98,43 +116,48 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Full-Screen Overlay Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-canvas border-b border-border px-6 pt-4 pb-8 shadow-xl animate-fade-in">
-          <div className="flex flex-col space-y-4 text-sm uppercase tracking-widest font-medium">
-            {NAV_LINKS.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 border-b border-border-subtle ${
-                    isActive ? "text-gold font-semibold" : "text-charcoal"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-          </div>
+        <div className="lg:hidden fixed inset-x-0 top-[65px] bg-canvas border-b border-border shadow-2xl overflow-y-auto max-h-[calc(100vh-65px)] z-50">
+          <div className="px-6 pt-6 pb-8 space-y-6">
+            <div className="grid grid-cols-2 gap-3 text-xs uppercase tracking-widest font-medium">
+              {NAV_LINKS.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`p-3 border rounded-sm flex items-center justify-between transition-all ${
+                      isActive
+                        ? "bg-charcoal text-canvas border-charcoal font-semibold"
+                        : "bg-surface text-charcoal border-border hover:bg-surface-hover"
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    <ChevronRight className={`w-3.5 h-3.5 ${isActive ? "text-gold" : "text-charcoal-muted"}`} />
+                  </Link>
+                );
+              })}
+            </div>
 
-          <div className="mt-6 pt-4 border-t border-border flex flex-col space-y-3">
-            <a
-              href={`tel:${SITE_CONFIG.phone.replace(/\s+/g, "")}`}
-              className="flex items-center justify-center space-x-2 border border-charcoal text-charcoal py-3 text-xs uppercase tracking-widest font-semibold"
-            >
-              <Phone className="w-4 h-4 text-gold" />
-              <span>Call Salon ({SITE_CONFIG.phone})</span>
-            </a>
-            <Link
-              href="/book"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center space-x-2 bg-charcoal text-canvas py-3 text-xs uppercase tracking-widest font-semibold"
-            >
-              <Sparkles className="w-4 h-4 text-gold" />
-              <span>Book Appointment Online</span>
-            </Link>
+            <div className="pt-4 border-t border-border space-y-3">
+              <a
+                href={`tel:${SITE_CONFIG.phone.replace(/\s+/g, "")}`}
+                className="flex items-center justify-center space-x-2 border border-charcoal text-charcoal py-3.5 text-xs uppercase tracking-widest font-semibold rounded-sm"
+              >
+                <Phone className="w-4 h-4 text-gold-dark" />
+                <span>Call Salon ({SITE_CONFIG.phone})</span>
+              </a>
+              <Link
+                href="/book"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center space-x-2 bg-gold hover:bg-gold-dark text-charcoal hover:text-canvas py-3.5 text-xs uppercase tracking-widest font-bold transition-all rounded-sm shadow-md"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Reserve Online Appointment</span>
+              </Link>
+            </div>
           </div>
         </div>
       )}

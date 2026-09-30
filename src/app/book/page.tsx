@@ -1,8 +1,7 @@
 import { Metadata } from "next";
-import Link from "next/link";
-import { Sparkles, Calendar, Clock, ArrowRight, MessageCircle } from "lucide-react";
+import { Sparkles, MessageCircle } from "lucide-react";
 import { getServices, getStaffMembers } from "@/services/catalogService";
-import { formatPrice, formatDuration } from "@/lib/utils";
+import BookingWizard from "@/components/booking/BookingWizard";
 import { getWhatsAppInquiryLink } from "@/lib/whatsapp";
 
 export const metadata: Metadata = {
@@ -22,93 +21,48 @@ export default async function BookPage({
   const whatsappUrl = getWhatsAppInquiryLink("general");
 
   return (
-    <div className="bg-canvas py-16 sm:py-24">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <div className="bg-canvas py-12 sm:py-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Header */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3">
           <div className="inline-flex items-center space-x-2 text-xs uppercase tracking-[0.3em] text-gold-dark font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Real-Time Reservation Engine</span>
           </div>
-          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-charcoal font-normal">
+          <h1 className="font-serif text-4xl sm:text-5xl font-normal text-charcoal">
             Reserve Your Sanctuary Ritual
           </h1>
-          <p className="text-sm sm:text-base text-charcoal-muted leading-relaxed font-light max-w-xl mx-auto">
-            Choose your desired ritual below to launch our real-time availability calendar. (Full Phase 3 Concurrency Engine & Razorpay Checkout will integrate into this wizard).
+          <p className="text-xs sm:text-sm text-charcoal-muted leading-relaxed max-w-xl mx-auto font-light">
+            Select your preferred treatment, date, specialist, and live time slot below to secure your appointment.
           </p>
         </div>
 
-        {coupon && (
-          <div className="bg-surface p-4 border border-gold/40 rounded-sm text-center text-xs text-charcoal flex items-center justify-center space-x-2">
-            <Sparkles className="w-4 h-4 text-gold" />
-            <span>Active Promotion Applied: <strong className="font-mono text-gold-dark font-bold">{coupon}</strong></span>
-          </div>
-        )}
+        {/* 8-Step Interactive Booking Wizard */}
+        <BookingWizard
+          services={services}
+          staffMembers={staff}
+          initialServiceSlug={serviceSlug}
+          initialCoupon={coupon}
+        />
 
-        {/* Services Quick Selection Grid */}
-        <div className="space-y-4">
-          <h3 className="text-xs uppercase tracking-widest font-semibold text-charcoal">
-            Step 1: Select Your Treatment
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {services.slice(0, 8).map((s) => {
-              const isSelected = serviceSlug === s.slug;
-              return (
-                <Link
-                  key={s.slug}
-                  href={`/services/${s.slug}`}
-                  className={`p-5 rounded-sm border transition-all duration-200 flex flex-col justify-between space-y-3 ${
-                    isSelected
-                      ? "bg-charcoal text-canvas border-charcoal shadow-md"
-                      : "bg-surface-raised hover:bg-surface-hover text-charcoal border-border"
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="font-serif text-lg font-medium">{s.name}</h4>
-                      <p className={`text-xs mt-0.5 ${isSelected ? "text-stone-300" : "text-charcoal-muted"}`}>
-                        {formatDuration(s.durationMinutes)} • {s.categorySlug.toUpperCase()}
-                      </p>
-                    </div>
-                    <span className={`font-serif text-base font-semibold ${isSelected ? "text-gold" : "text-charcoal"}`}>
-                      {formatPrice(s.discountPrice || s.basePrice)}
-                    </span>
-                  </div>
-
-                  <div className={`pt-2 border-t flex items-center justify-between text-xs ${isSelected ? "border-white/20" : "border-border"}`}>
-                    <span className="text-[10px] uppercase tracking-wider">
-                      Advance: {formatPrice(s.advancePaymentAmount)}
-                    </span>
-                    <span className="font-semibold flex items-center space-x-1">
-                      <span>View Slot Calendar</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* WhatsApp Fast-Track Concierge */}
-        <div className="bg-espresso text-canvas p-8 rounded-sm text-center space-y-4 border border-gold/30">
-          <h3 className="font-serif text-2xl font-normal">
-            Need Immediate Same-Day Booking?
-          </h3>
-          <p className="text-xs sm:text-sm text-stone-300 max-w-md mx-auto font-light leading-relaxed">
-            Our WhatsApp concierge can instantly confirm slots for today or assist with custom bridal package scheduling.
+        {/* WhatsApp Concierge Banner */}
+        <div className="bg-espresso text-canvas p-6 rounded-sm text-center space-y-3 border border-gold/30">
+          <h3 className="font-serif text-xl font-normal">Need Same-Day VIP Booking?</h3>
+          <p className="text-xs text-stone-300 max-w-md mx-auto font-light">
+            Our WhatsApp concierge team can instantly confirm available time slots or assist with custom bridal consultation scheduling.
           </p>
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center space-x-2 bg-gold hover:bg-gold-hover text-charcoal px-7 py-3.5 text-xs uppercase tracking-widest font-bold transition-all duration-300"
+            className="inline-flex items-center space-x-2 bg-gold hover:bg-gold-hover text-charcoal px-6 py-3 text-xs uppercase tracking-widest font-bold transition-all"
           >
             <MessageCircle className="w-4 h-4 text-charcoal" />
-            <span>Chat With Concierge Now</span>
+            <span>Chat With Concierge</span>
           </a>
         </div>
       </div>
     </div>
   );
 }
+

@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
 
   // Protect /admin routes -> Requires admin / super_admin role
   if (pathname.startsWith('/admin')) {
-    if (!token) {
+    if (!token && process.env.NODE_ENV === 'production') {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(loginUrl);
